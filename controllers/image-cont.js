@@ -4,11 +4,19 @@ const fs = require("fs");
 
 
 
+// Determine uploads directory (allow override via env)
+const uploadsDir = path.join(__dirname, '..', process.env.UPLOAD_DIR || 'uploads');
+
+// Ensure uploads directory exists
+if (!fs.existsSync(uploadsDir)) {
+	fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
 // Set up storage engine
 const storage = multer.diskStorage({
 	destination: function (req, file, cb) {
-		cb(null, './uploads'); 
-
+		// Use the absolute uploadsDir so multer writes to an existing folder
+		cb(null, uploadsDir);
 	},
 	filename: function (req, file, cb) {
 		cb(null, Date.now() + path.extname(file.originalname)); // Unique filename
@@ -34,13 +42,16 @@ const uploadImage = async (req, res) => {
 		return res.status(400).json({ error: 'No file uploaded' });
 	}
 	try {
+		// Use a URL-friendly path when returning/storing so frontend can fetch via /uploads/:filename
+		const publicPath = `/uploads/${req.file.filename}`;
 		const newImage = new Image({
-			Path: req.file.path,
-			filename: req.file.filename
+			Path: publicPath,
+			filename: req.file.filename,
 		});
 		await newImage.save();
-		res.json({ filename: req.file.filename, path: req.file.path, dbId: newImage._id });
+		res.json({ filename: req.file.filename, path: publicPath, dbId: newImage._id });
 	} catch (err) {
+		console.error('Error saving image to DB:', err);
 		res.status(500).json({ error: 'Failed to save image to database' });
 	}
 };

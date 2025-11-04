@@ -24,10 +24,13 @@ app.use('/api/form', contactRoutes);
 // Image upload API
 app.use('/api/images', imageRoutes);
 
-// Serve uploaded images statically
-app.use('/uploads', express.static('uploads'));
+const path = require('path');
+// Serve uploaded images statically (use absolute path)
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 connectToMongo();
 app.listen(port, () => {
     console.log(`App listening at http://localhost:${port}`);
 });
+
+module.exports = app;
