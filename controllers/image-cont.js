@@ -59,13 +59,24 @@ const uploadImage = async (req, res) => {
 
 
 const getAllImages = async (req, res) => {
-    try {
-        const images = await Image.find({});
-        res.json(images);
-    } catch (err) {
-        res.status(500).json({ error: 'Failed to fetch images' });
-		throw err;
-    }
+	try {
+		const images = await Image.find({});
+
+		// Normalize returned paths so frontend can reliably fetch via /uploads/:filename
+		const normalized = images.map(img => {
+			const filename = img.filename || (img.Path && path.basename(img.Path)) || null;
+			return {
+				_id: img._id,
+				filename,
+				path: filename ? `/uploads/${filename}` : (img.Path || null),
+			};
+		});
+
+		res.json(normalized);
+	} catch (err) {
+		console.error('Error fetching images:', err);
+		res.status(500).json({ error: 'Failed to fetch images' });
+	}
 };
 
 module.exports = { upload, uploadImage,  getAllImages };
