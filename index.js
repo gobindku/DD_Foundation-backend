@@ -8,7 +8,7 @@ const cors = require("cors");
 const imageRoutes = require("./routes/imageRoutes");
 
 const corsOption = {
-    origin:  "https://dd-foundation-17tv.vercel.app/",
+    origin:  "https://dd-foundation-17tv.vercel.app",
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
 };
